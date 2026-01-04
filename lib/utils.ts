@@ -1,4 +1,5 @@
 import { clsx, type ClassValue } from 'clsx'
+import { jsonrepair } from 'jsonrepair'
 import { twMerge } from 'tailwind-merge'
 
 export function cn(...inputs: ClassValue[]) {
@@ -113,6 +114,21 @@ export function mergeDelAddToUpdates(diff: DiffItem[]): DiffItem[] {
     }
   }
 
+  return result;
+}
+
+export function jsonRepairSafe(jsonString = '') {
+  const cleanedString = jsonString.replace(/^```json\s*|```$/g, "").trim();
+  
+  let result: any = [];
+  try {
+    const repairedString = jsonrepair(cleanedString);
+    result = JSON.parse(repairedString);
+    if (!Array.isArray(result)) throw new Error("响应不是JSON数组。")
+  } catch (error) {
+    console.error('JSON repair failed:', error);
+  }
+  
   return result;
 }
 

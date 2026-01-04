@@ -11,10 +11,10 @@ import type {
 } from "@/types/proofreading"
 import { useLocalStorage } from "./use-localStorage"
 import fetchSSE from "@/lib/fetchSSE"
-import { delay } from "@/lib/utils"
+import { delay, jsonRepairSafe } from "@/lib/utils"
 
 export const DEFAULT_CONFIG: ProofreadingConfig = {
-  apiUrl: process.env.NEXT_PUBLIC_OPENAI_API_URL    || 'https://text.pollinations.ai/openai',
+  apiUrl: process.env.NEXT_PUBLIC_OPENAI_API_URL    || 'https://gen.pollinations.ai/v1/chat/completions',
   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY    || '',
   model: process.env.NEXT_PUBLIC_OPENAI_MODEL       || 'openai',
   firecrawlKey: process.env.NEXT_PUBLIC_FIRE_KEY    || '',
@@ -122,19 +122,8 @@ ${text}
       const { content, analyze: analyzeData } = await fetchSSE(payload)
       setAnalyze(analyzeData)
       
-      const responseContent = content.replace(/^```json\s*|```$/g, "").trim()
-      let parsedIssues: Issue[] = []
-      try {
-        parsedIssues = JSON.parse(responseContent)
-        if (!Array.isArray(parsedIssues)) throw new Error("响应不是JSON数组。")
-      } catch (e: any) {
-        console.error("解析校对API响应失败:", e, "原始响应:", responseContent)
-        parsedIssues = await fixJsonFormat(responseContent)
-
-        if (!Array.isArray(parsedIssues)) throw new Error("修复后的响应不是JSON数组。")
-      }
-
       let [issueIdCounter, currentOffset] = [0, 0]
+      const parsedIssues: Issue[] = jsonRepairSafe(content)
       const processedIssues = parsedIssues.map((item) => {
         const start = inputText.indexOf(item.original, currentOffset)
         const issue = {
@@ -175,20 +164,6 @@ ${text}
     } finally {
       setIsLoading(false)
       setController(null)
-    }
-  }
-  
-  const fixJsonFormat = async (json: string) => {
-    try {
-      const prompt = `请修复以下 JSON 格式错误, 请直接返回修复后的 JSON 格式, 不要任何其他信息：\n\n${json}`
-      const response = await fetch(`https://text.pollinations.ai/${prompt}?model=gemini&token=${config.pollinationsKey}`);
-      const data = await response.text()
-      const jsonStr = data.replace(/^```json\s*|```$/g, "").trim()
-
-      return JSON.parse(jsonStr)
-    } catch (error) {
-      console.error("修复 JSON 格式错误出错:", error)
-      return json
     }
   }
 

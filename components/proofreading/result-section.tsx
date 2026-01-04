@@ -5,11 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { CheckCircle2, AlertCircle, Wand2, EyeOff, Eye, GitCompareArrows, Download, MonitorCheckIcon } from "lucide-react"
+import { CheckCircle2, AlertCircle, Wand2, EyeOff, Eye, Copy, GitCompareArrows, Download, MonitorCheckIcon } from "lucide-react"
 import type { Issue, IssueCategory } from "@/types/proofreading"
 import { IssueHighlight } from "./issue-highlight"
 import { IssueList } from "./issue-list"
 import { exportByBlob } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
 
 interface ResultSectionProps {
   inputText: string
@@ -81,6 +82,17 @@ export function ResultSection({
     exportByBlob(url, fileName)
   }
 
+  
+  const { toast } = useToast();
+  const handleCopy = async () => {
+    if (!inputText.trim()) return
+    await navigator.clipboard.writeText(inputText)
+    toast({
+      title: "已复制",
+      description: "文本已复制到剪贴板",
+    })
+  }
+
   useEffect(() => {    
     return () => {
       setShowDiff(false)
@@ -139,6 +151,7 @@ export function ResultSection({
         {activeIssues.length > 0 ? (
           <div
             className={`p-4 rounded-lg border ${unfixedCount > 0 ? "bg-yellow-500/10 border-yellow-500/20" : "bg-green-500/10 border-green-500/20"}`}
+            onClick={handleCopy}
           >
             <div className="flex items-center gap-3">
               {unfixedCount > 0 ? (
@@ -150,15 +163,17 @@ export function ResultSection({
                 {unfixedCount > 0 ? (
                   <p className="text-sm text-foreground">
                     共发现<span className="font-semibold mx-1">{activeIssues.length}</span>个问题，还有
-                    <span className="font-semibold mx-1">{unfixedCount}</span>个待处理。
-                    将鼠标悬停在下方高亮文本上查看修改建议，修改后更新到上方输入框。
+                    <span className="font-semibold mx-1">{unfixedCount}</span>个待处理，
+                    将鼠标悬停在下方高亮文本上查看修改建议
                   </p>
                 ) : (
-                  <p className="text-sm text-green-600 dark:text-green-400 flex items-center gap-2">
-                    太棒了！所有问题都已修复。最终文本已更新到上方输入框。
+                  <p className="text-sm text-green-600 dark:text-green-400 flex items-center gap-2 cursor-pointer">
+                    太棒了！所有问题都已修复，点击复制文本到剪贴板
                   </p>
                 )}
               </div>
+
+              <Copy className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-pointer ml-auto" />
             </div>
           </div>
         ) : (
@@ -170,7 +185,7 @@ export function ResultSection({
           </div>
         )}
 
-        <div className={`flex items-start gap-4 ${showDiff ? "text-sm" : "text-base"}`}>
+        <div className={`relative flex items-start gap-4 ${showDiff ? "text-sm" : "text-base"}`}>
           {showDiff && (
             <IssueHighlight
               inputText={originalData.inputText}

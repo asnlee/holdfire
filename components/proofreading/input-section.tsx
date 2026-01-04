@@ -153,7 +153,11 @@ export function InputSection({
 
     try {
       const prompt = '请将以下文本转换为markdown格式：\n\n' + text
-      const response = await fetch(`https://text.pollinations.ai/${prompt}?model=gemini&token=${config.pollinationsKey}`);
+      const response = await fetch(`https://gen.pollinations.ai/text/${prompt}?model=gemini`, {
+        headers: {
+          'Authorization': `Bearer ${config.pollinationsKey}`,
+        }
+      });
       const data = await response.text()
       const file = new File([data], `${uploadedFile}.md`, { type: 'text/markdown' });
       handleFileUpload({ target: { files: [file] } } as any);
@@ -182,7 +186,11 @@ export function InputSection({
       setLoadingAudio(true)
       const text = `文字转语音：${selectedText}`
       const token = config.pollinationsKey || process.env.NEXT_PUBLIC_POLL_KEY
-      const response = await fetch(`https://text.pollinations.ai/${text}?model=openai-audio&voice=nova&token=${token}`)
+      const response = await fetch(`https://gen.pollinations.ai/text/${text}?model=openai-audio&voice=nova`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      })
       const blob = await response.blob()
       const audioUrl = URL.createObjectURL(blob)
       const audio = new Audio(audioUrl)

@@ -127,7 +127,7 @@ export async function parseImage(file: File, config: ProofreadingConfig): Promis
     const image_url = await fileToBase64(file)
     const token = config.pollinationsKey || process.env.NEXT_PUBLIC_POLL_KEY
 
-    const response = await fetch('https://text.pollinations.ai/openai', {
+    const response = await fetch('https://gen.pollinations.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

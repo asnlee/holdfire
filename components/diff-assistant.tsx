@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react"
 import { Languages, Server, Search, ArrowRightLeft, Link, HistoryIcon, Lightbulb, Loader2, Image as ImageIcon, FileText } from "lucide-react"
 import { useProofreading } from "@/hooks/use-proofreading"
-import { generateDiffMarkup, DiffItem, delay } from "@/lib/utils"
+import { generateDiffMarkup, DiffItem, delay, jsonRepairSafe } from "@/lib/utils"
 import { HistoryEntry } from "@/types/proofreading"
 import { Header } from "./proofreading/header"
 import { Footer } from "./proofreading/footer"
@@ -268,7 +268,7 @@ export function DiffAssistant() {
     if (loading) return
     try {
       setLoading(true)
-      const response = await fetch('https://text.pollinations.ai/openai', {
+      const response = await fetch('https://gen.pollinations.ai/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -298,8 +298,8 @@ export function DiffAssistant() {
       })
 
       const data = await response.json()
-      const text = data.choices[0].message.content.replace(/^```json\s*|```$/g, "").trim()
-      const parsedText = JSON.parse(text)
+      const text = data.choices[0].message.content
+      const parsedText = jsonRepairSafe(text)
 
       setImageDiffResults(parsedText)
     } catch (error) {
