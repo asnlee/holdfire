@@ -48,6 +48,11 @@ export function IssueList({
     setEditValue(issue.suggestion)
   }
 
+  const onAccept = (issue: Issue) => {    
+    const newIssue = { ...issue, suggestion: editingIssueId != null ? editValue : issue.suggestion }
+    onAcceptSuggestion(issue.id, newIssue)
+  }
+
   if (sortedIssues.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -88,6 +93,7 @@ export function IssueList({
                       ? <textarea value={editValue} onChange={(e) => setEditValue(e.target.value)} className="w-full p-2 border border-border rounded-md text-xs resize-none" rows={3} autoFocus /> 
                       : <TextOutput className="min-h-[auto]" diff={replaceDelContent(generateDiffMarkup(issue.suggestion, issue.original))} onClick={(e) => startEditSuggestion(issue, e)} /> : null
                     }
+                    <p className="text-xs text-muted-foreground opacity-50 leading-relaxed">{issue.original}</p>
                   </div>
                 </div>
 
@@ -100,7 +106,7 @@ export function IssueList({
                     </Badge>
                   ) : (
                     <>
-                      <Badge variant="default" className="h-6" onClick={() => onAcceptSuggestion(issue.id, { ...issue, suggestion: editingIssueId ? editValue : issue.suggestion })}>
+                      <Badge variant="default" className="h-6" onClick={() => onAccept(issue)}>
                         <Check className="h-4 w-4" />
                       </Badge>
                       <Badge variant="secondary" className="h-6" onClick={() => onIgnoreSuggestion(issue.id)}>

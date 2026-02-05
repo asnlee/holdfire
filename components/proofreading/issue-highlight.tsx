@@ -106,7 +106,12 @@ export function IssueHighlight({
     return { ...item, content: item.type !== 'del' ? item.content : ' ' }
   })
 
- useEffect(() => {
+  const onAccept = (issue: Issue) => {    
+    const newIssue = { ...issue, suggestion: editingIssueId != null ? editValue : issue.suggestion }
+    onAcceptSuggestion(issue.id, newIssue)
+  }
+
+  useEffect(() => {
     const newSegments = segments.map((segment) => {
       if (segment.type === "text" || !segment.issue) return segment
 
@@ -165,8 +170,8 @@ export function IssueHighlight({
           const issue = segment.issue!
           return (
             <span id={`issue-${issue.id}`} key={index} className={`relative group cursor-pointer ${getHighlightClass(issue)}`}>
-              {issue.fixed ? segment.content : segment.content ? segment.issue?.original : segment.content}
-              {!issue.fixed && !issue.ignored && (
+              {issue.fixed ? segment.content : issue.original}
+              {issue.fixed === issue.ignored && (
                 <div className="suggestion-popup absolute bottom-full mb-2 left-0 hidden group-hover:block group-active:block z-10 min-w-[250px] max-w-[400px]">
                   <div className="bg-popover border border-border rounded-lg shadow-lg p-3">
                     <div className="text-xs font-medium text-destructive mb-1 leading-relaxed">{issue.reason}</div>
@@ -190,7 +195,7 @@ export function IssueHighlight({
                         )}
                       </div>
                     <div className="flex items-center gap-2">
-                      <Badge className="h-6 text-xs" onClick={() => onAcceptSuggestion(issue.id, { ...issue, suggestion: editingIssueId ? editValue : issue.suggestion })}>
+                      <Badge className="h-6 text-xs" onClick={() => onAccept(issue)}>
                         采纳
                       </Badge>
                       <Badge className="h-6 text-xs" variant="secondary" onClick={() => onIgnoreSuggestion(issue.id)}>
