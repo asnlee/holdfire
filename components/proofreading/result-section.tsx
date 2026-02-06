@@ -5,11 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { CheckCircle2, AlertCircle, Wand2, EyeOff, Eye, Copy, GitCompareArrows, Download, MonitorCheckIcon } from "lucide-react"
+import { CheckCircle2, AlertCircle, Wand2, EyeOff, Copy, GitCompareArrows, Download, MonitorCheckIcon } from "lucide-react"
 import type { Issue, IssueCategory } from "@/types/proofreading"
 import { IssueHighlight } from "./issue-highlight"
 import { IssueList } from "./issue-list"
-import { exportByBlob } from "@/lib/utils"
+import { exportByBlob, cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 
 interface ResultSectionProps {
@@ -24,12 +24,12 @@ interface ResultSectionProps {
   onIgnoreCategory: (category: IssueCategory | "all") => void
 }
 
-const CATEGORIES: { value: IssueCategory | "all"; label: string }[] = [
-  { value: "all", label: "全部" },
-  { value: "错别字", label: "错别字" },
-  { value: "语法错误", label: "语法错误" },
-  { value: "标点符号", label: "标点符号" },
-  { value: "表达优化", label: "表达优化" },
+const CATEGORIES: { value: IssueCategory | "all"; label: string; color: string }[] = [
+  { value: "all", label: "全部", color: "bg-white" },
+  { value: "错别字", label: "错别字", color: "bg-red-500/20" },
+  { value: "语法错误", label: "语法错误", color: "bg-yellow-500/20" },
+  { value: "标点符号", label: "标点符号", color: "bg-purple-500/20" },
+  { value: "表达优化", label: "表达优化", color: "bg-blue-500/20" },
 ]
 
 export function ResultSection({
@@ -50,7 +50,6 @@ export function ResultSection({
 
   const activeIssues = useMemo(() => issues.filter((i) => !i.ignored), [issues])
   const unfixedCount = useMemo(() => activeIssues.filter((i) => !i.fixed).length, [activeIssues])
-  const ignoredCount = useMemo(() => issues.filter((i) => i.ignored).length, [issues])
 
   const filteredIssues = useMemo(() => {
     let filtered = showIgnored ? issues : activeIssues
@@ -124,26 +123,19 @@ export function ResultSection({
               <Button size="sm" variant="outline" onClick={exportText}>
                 <Download className="h-4 w-4" /> 导出
               </Button>
-
-              <Button size="sm" onClick={() => setShowDiff(!showDiff)}>
-                <GitCompareArrows className="h-4 w-4" /> {showDiff ? "隐藏对比" : "查看对比"}
-              </Button>
             </div>}
           </CardTitle>
 
           {activeIssues.length > 0 && unfixedCount > 0 && (
             <div className="flex items-center gap-2">
-              {ignoredCount > 0 && (
-                <Button variant="outline" size="sm" onClick={() => setShowIgnored(!showIgnored)}>
-                  {showIgnored ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  {showIgnored ? "隐藏忽略" : "显示忽略"}
-                </Button>
-              )}
+              <Button variant="outline" size="sm" onClick={() => setShowDiff(!showDiff)}>
+                <GitCompareArrows className="h-4 w-4" /> {showDiff ? "隐藏对比" : "查看对比"}
+              </Button>
 
               {activeCategory !== "all" && unfixedInCategory > 0 && (
                 <Button variant="outline" size="sm" onClick={() => onIgnoreCategory(activeCategory)}>
                   <EyeOff className="h-4 w-4" />
-                  忽略此分类
+                  忽略分类({unfixedInCategory})
                 </Button>
               )}
 
@@ -162,7 +154,7 @@ export function ResultSection({
             className={`p-4 rounded-lg border ${unfixedCount > 0 ? "bg-yellow-500/10 border-yellow-500/20" : "bg-green-500/10 border-green-500/20"}`}
             onClick={handleCopy}
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 text-sm">
               {unfixedCount > 0 ? (
                 <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
               ) : (
@@ -170,19 +162,22 @@ export function ResultSection({
               )}
               <div>
                 {unfixedCount > 0 ? (
-                  <p className="text-sm text-foreground">
-                    共发现<span className="font-semibold mx-1">{activeIssues.length}</span>个问题，还有
+                  <p className="text-foreground">
+                    共发现<span className="font-semibold mx-1">{issues.length}</span>个问题，还有
                     <span className="font-semibold mx-1">{unfixedCount}</span>个待处理，
                     将鼠标悬停在下方高亮文本上查看修改建议
                   </p>
                 ) : (
-                  <p className="text-sm text-green-600 dark:text-green-400 flex items-center gap-2 cursor-pointer">
+                  <p className="text-green-600 dark:text-green-400 flex items-center gap-2 cursor-pointer">
                     太棒了！所有问题都已修复，点击复制文本到剪贴板
                   </p>
                 )}
               </div>
 
-              <Copy className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-pointer ml-auto" />
+              <span className="ml-auto flex items-center gap-2 text-xs opacity-60 hover:opacity-100 cursor-pointer">
+                复制文本
+                <Copy className="h-4 w-4 text-gray-400" />
+              </span>
             </div>
           </div>
         ) : (
@@ -208,7 +203,7 @@ export function ResultSection({
               {CATEGORIES.map((cat) => (
                 <TabsTrigger key={cat.value} value={cat.value} className="flex items-center gap-2">
                   {cat.label}
-                  <Badge variant="secondary" className="ml-1">
+                  <Badge variant="secondary" className={cn("ml-1", cat.color)}>
                     {categoryCount[cat.value] || 0}
                   </Badge>
                 </TabsTrigger>

@@ -4,6 +4,7 @@ interface TextOutputProps {
     diff: DiffItem[]
     className?: string
     onClick?: (e: React.MouseEvent) => void
+    title?: string
 }
 
 export function TextOutput({ diff, ...props }: TextOutputProps) {    

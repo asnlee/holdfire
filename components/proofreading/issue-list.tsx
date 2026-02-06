@@ -3,7 +3,7 @@
 import { useState } from "react"
 import type { Issue } from "@/types/proofreading"
 import { Badge } from "@/components/ui/badge"
-import { Eye, Check, X, Undo2, CheckCircle2 } from "lucide-react"
+import { Eye, Check, X, Undo2, CheckCircle2, Copy } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { TextOutput } from "../different/text-output"
 import { DiffItem, generateDiffMarkup } from "@/lib/utils"
@@ -87,13 +87,15 @@ export function IssueList({
                     {issue.reason}
                   </p>
                   <div className="flex flex-col text-xs leading-relaxed">
+                    <p className="text-xs text-muted-foreground opacity-50 leading-relaxed">
+                      {issue.original}
+                      {editingIssueId === issue.id && <Copy className="h-3 w-3 text-gray-400 hover:text-gray-600 cursor-pointer ml-1 inline" onClick={() => navigator.clipboard.writeText(issue.original)} />}
+                    </p>
                     {issue.fixed && <span className="font-medium text-green-500">{issue.suggestion}</span>}
-                    {issue.ignored && <span className="text-muted-foreground text-foreground/70">{issue.original}</span>}
                     {issue.fixed === issue.ignored ? editingIssueId === issue.id 
                       ? <textarea value={editValue} onChange={(e) => setEditValue(e.target.value)} className="w-full p-2 border border-border rounded-md text-xs resize-none" rows={3} autoFocus /> 
-                      : <TextOutput className="min-h-[auto]" diff={replaceDelContent(generateDiffMarkup(issue.suggestion, issue.original))} onClick={(e) => startEditSuggestion(issue, e)} /> : null
+                      : <TextOutput className="min-h-[auto]" title="点击修改建议" diff={replaceDelContent(generateDiffMarkup(issue.suggestion, issue.original))} onClick={(e) => startEditSuggestion(issue, e)} /> : null
                     }
-                    <p className="text-xs text-muted-foreground opacity-50 leading-relaxed">{issue.original}</p>
                   </div>
                 </div>
 
