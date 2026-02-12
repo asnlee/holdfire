@@ -1,8 +1,6 @@
 "use client"
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import type { HistoryEntry } from "@/types/proofreading"
 import { Trash2 } from "lucide-react"
 
@@ -32,7 +30,7 @@ export function HistoryDialog({ open, onOpenChange, history, onRestore, onDelete
           </div>
         </DialogHeader>
 
-        <ScrollArea className="h-[500px]">
+        <div className="w-full h-[500px] overflow-y-auto">
           {history.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <p>暂无历史记录</p>
@@ -65,7 +63,7 @@ export function HistoryDialog({ open, onOpenChange, history, onRestore, onDelete
               ))}
             </div>
           )}
-        </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   )

@@ -210,10 +210,20 @@ export function InputSection({
             <span className="flex items-center gap-2">
               <Languages className="h-5 w-5 text-primary" />输入文本
             </span>
-            <a href="https://changfengbox.top/wechat" target="_blank" className="text-xs text-primary hover:underline flex items-center gap-1">
-              <Link className="h-3 w-3" />
-              文章下载
-            </a>
+
+            <ul className="flex items-center gap-2 text-xs text-primary">
+              <li><Link className="h-3 w-3" /></li>
+              <li>
+                <a href="https://changfengbox.top/wechat" target="_blank" className="hover:underline">
+                  文章下载
+                </a>
+              </li>
+              <li>
+                <a href="https://matrix.tencent.com/ai-detect/ai_gen_txt" target="_blank" className="hover:underline">
+                  AI率检测
+                </a>
+              </li>
+            </ul>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">

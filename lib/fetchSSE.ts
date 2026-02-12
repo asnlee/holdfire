@@ -39,8 +39,7 @@ export default async function fetchSSE(config: fetchSSEParams) {
                 { role: "user", content: config.inputText },
             ],
             stream: true,
-            temperature: 0.1,
-            response_format: { type: "json_object" },
+            temperature: 0.1
         }),
         signal,
     })
