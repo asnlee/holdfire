@@ -106,8 +106,9 @@ export function IssueHighlight({
     return { ...item, content: item.type !== 'del' ? item.content : ' ' }
   })
 
-  const onAccept = (issue: Issue) => {    
-    const newIssue = { ...issue, suggestion: editingIssueId != null ? editValue : issue.suggestion }
+  const onAccept = (issue: Issue) => {
+    const hasEditValue = editingIssueId != null && editingIssueId === issue.id    
+    const newIssue = { ...issue, suggestion: hasEditValue ? editValue : issue.suggestion }
     onAcceptSuggestion(issue.id, newIssue)
   }
 
