@@ -33,6 +33,7 @@ export function exportByBlob(url: string, fileName: string) {
 export interface DiffItem {
   type: 'text' | 'del' | 'update'
   content: string
+  original?: string
 }
 
 export function generateDiffMarkup(original: string, polished: string): DiffItem[] {

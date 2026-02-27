@@ -43,6 +43,7 @@ export function useProofreading() {
   const [isLoading, setIsLoading] = useState(false)
   const [wordCount, setWordCount] = useState(0)
   const [showResults, setShowResults] = useState(false)
+  const [fastMode, setFastMode] = useState(false)
   const [issues, setIssues] = useState<Issue[]>([])
   const [apiError, setApiError] = useState<string | null>(null)
   const [analyze, setAnalyze] = useState<any>({})
@@ -82,9 +83,8 @@ export function useProofreading() {
       enabledCorrections.length > 0
         ? `\n自定义词库：${enabledCorrections.map((c) => `${c.original} => ${c.suggestion}`).join(", ")}`
         : ""
-
-    return `请分析以下文字片段，找出其中的语法错误、拼写错误、表达优化等问题，并提供修改建议。严格检查所有可能的错误并进行优化。
-要求返回一个JSON数组，每个元素包含以下字段：
+    
+    const promptText = fastMode ? '请直接返回修改后的文本，不要包含任何额外解释或markdown标记。' : `要求返回一个JSON数组，每个元素包含以下字段：
 - "original": 原始文本片段 (必须在原文中精确存在)
 - "suggestion": 建议修改后的文本
 - "reason": 修改原因的简要说明
@@ -92,12 +92,9 @@ export function useProofreading() {
 请确保:
 1. 只返回JSON格式的数据，不要包含任何额外解释或markdown标记。
 2. "original" 字段必须是原文中连续且完全匹配的片段。
-3. 按照原文顺序返回，保持原文风格不要过度修改。
-文本内容：
-"""
-${text}
-"""${thesaurusText}
-请直接返回JSON数组, 参考格式：[{...}, ...]`
+3. 按照原文顺序返回，保持原文风格不要过度修改。`
+
+    return `请分析以下文字片段，找出其中的语法错误、拼写错误、表达优化等问题，严格检查所有可能的错误并进行优化。${promptText}\n文本内容：\n"""\n${text}\n"""${thesaurusText}`
   }
 
   const checkText = async () => {
@@ -123,7 +120,7 @@ ${text}
       setAnalyze(analyzeData)
       
       let [issueIdCounter, currentOffset] = [0, 0]
-      const parsedIssues: Issue[] = jsonRepairSafe(content)
+      const parsedIssues: any[] = fastMode ? [{ original: inputText, suggestion: content }] : jsonRepairSafe(content)      
       const processedIssues = parsedIssues.map((item) => {
         const start = inputText.indexOf(item.original, currentOffset)
         const isFound = start !== -1
@@ -288,6 +285,8 @@ ${text}
     wordCount,
     isLoading,
     showResults,
+    fastMode,
+    setFastMode,
     issues,
     apiError,
     abortCheck,

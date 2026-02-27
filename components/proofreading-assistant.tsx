@@ -45,6 +45,8 @@ export function ProofreadingAssistant() {
           config={proofreading.config}
           inputText={proofreading.inputText}
           setInputText={proofreading.setInputText}
+          fastMode={proofreading.fastMode}
+          setFastMode={proofreading.setFastMode}
           wordCount={proofreading.wordCount}
           isLoading={proofreading.isLoading}
           onCheck={proofreading.checkText}

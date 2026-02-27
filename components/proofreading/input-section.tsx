@@ -5,7 +5,7 @@ import type React from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, Copy, Trash2, Lightbulb, Upload, FileText, Eye, Languages, Volume2, Search, BookOpen, Link, MonitorCheckIcon} from "lucide-react"
+import { Loader2, Copy, Trash2, Lightbulb, Upload, FileText, Eye, Languages, Volume2, Search, BookOpen, Link, MonitorCheckIcon, Rocket } from "lucide-react"
 import { useRef, useState } from "react"
 import { parseFile, type ParsedFile } from "@/lib/file-parser"
 import { request } from "@/lib/request"
@@ -17,6 +17,8 @@ interface InputSectionProps {
   config: ProofreadingConfig
   inputText: string
   setInputText: (text: string) => void
+  fastMode: boolean
+  setFastMode: (mode: boolean) => void
   wordCount: number
   isLoading: boolean
   onCheck: () => void
@@ -31,6 +33,8 @@ export function InputSection({
   config,
   inputText,
   setInputText,
+  fastMode,
+  setFastMode,
   wordCount,
   isLoading,
   onCheck,
@@ -331,24 +335,20 @@ export function InputSection({
             </div>
 
             <div className="flex items-center gap-2">
-              {isLoading ? 
-              <Button variant="ghost" size="sm" onClick={abortCheck} className="text-destructive hover:text-destructive">
-                停止
-              </Button> : 
-              <Button variant="ghost" size="sm" onClick={() => { onClear(); removeFile() }} className="text-destructive hover:text-destructive">
-                清空
+              <Button variant={fastMode ? "outline" : "ghost"} title="极速模式" onClick={() => setFastMode(!fastMode)}>
+                <Rocket className="h-4 w-4" style={{ opacity: fastMode ? 1 : 0.4 }} />
+                {fastMode && <span className="text-xs">极速</span>}
               </Button>
-              }
-              <Button onClick={onCheck} disabled={isLoading || !inputText.trim()}>
+              <Button onClick={isLoading ? abortCheck : onCheck}>
                 {isLoading ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    校对中
+                    停止
                   </>
                 ) : (
                   <>
                     <Search className="h-4 w-4" />
-                    开始校对
+                    校对
                   </>
                 )}
               </Button>

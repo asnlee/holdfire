@@ -9,7 +9,8 @@ import { CheckCircle2, AlertCircle, Wand2, EyeOff, Copy, GitCompareArrows, Downl
 import type { Issue, IssueCategory } from "@/types/proofreading"
 import { IssueHighlight } from "./issue-highlight"
 import { IssueList } from "./issue-list"
-import { exportByBlob, cn } from "@/lib/utils"
+import { exportByBlob, cn, generateDiffMarkup } from "@/lib/utils"
+import { TextOutput } from "../different/text-output"
 import { useToast } from "@/hooks/use-toast"
 
 interface ResultSectionProps {
@@ -107,6 +108,42 @@ export function ResultSection({
     }
   }, [inputText])
 
+  if (issues.length === 1) {
+    const leftDiff = generateDiffMarkup(inputText, issues[0].suggestion)
+    const rightDiff = generateDiffMarkup(issues[0].suggestion, inputText)
+    const replaceDelContent = (diff: any[]) => diff.map(item => {
+      return { ...item, content: item.type !== 'del' ? item.content : ' ' }
+    })
+
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <div className="flex items-end justify-between gap-2">
+              <span className="flex items-center gap-2">
+                <MonitorCheckIcon className="h-5 w-5 text-green-500 rotate-90" />校对结果
+              </span>
+
+              <div className="text-xs text-muted-foreground flex items-center gap-2">
+                <span className="highlight-warning">更改 {rightDiff.filter(item => item.type === 'update').length}</span>
+                <span className="highlight-error">删除 {rightDiff.filter(item => item.type === 'del').length}</span>
+                <span className="text-green-600 dark:text-green-400 cursor-pointer" onClick={() => navigator.clipboard.writeText(issues[0].suggestion)}>
+                  复制文本
+                </span>
+              </div>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-start gap-4 max-h-[600px] overflow-y-auto">
+            <TextOutput diff={replaceDelContent(leftDiff)} />
+            <TextOutput diff={replaceDelContent(rightDiff)} />
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -120,6 +157,9 @@ export function ResultSection({
             </div>
 
             {unfixedCount === 0 && <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setShowDiff(!showDiff)}>
+                <GitCompareArrows className="h-4 w-4" /> {showDiff ? "隐藏对比" : "查看对比"}
+              </Button>
               <Button size="sm" variant="outline" onClick={exportText}>
                 <Download className="h-4 w-4" /> 导出
               </Button>
