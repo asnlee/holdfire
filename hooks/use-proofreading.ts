@@ -84,15 +84,15 @@ export function useProofreading() {
         ? `\n自定义词库：${enabledCorrections.map((c) => `${c.original} => ${c.suggestion}`).join(", ")}`
         : ""
     
-    const promptText = fastMode ? '请直接返回修改后的文本，不要包含任何额外解释或markdown标记。' : `要求返回一个JSON数组，每个元素包含以下字段：
+    const promptText = fastMode ? '请直接返回修改后的文本，不要包含任何额外解释或markdown标记。' : `要求返回一个JSON数组，每个修改项包含以下字段：
 - "original": 原始文本片段 (必须在原文中精确存在)
 - "suggestion": 建议修改后的文本
 - "reason": 修改原因的简要说明
 - "category": 错误类型，可选值为 '错别字', '语法错误', '标点符号', '表达优化'
 请确保:
 1. 只返回JSON格式的数据，不要包含任何额外解释或markdown标记。
-2. "original" 字段必须是原文中连续且完全匹配的片段。
-3. 按照原文顺序返回，保持原文风格不要过度修改。`
+2. 按照修改顺序返回，保持原文风格不要过度修改。
+3. 请对JSON数组进行压缩`
 
     return `请分析以下文字片段，找出其中的语法错误、拼写错误、表达优化等问题，严格检查所有可能的错误并进行优化。${promptText}\n文本内容：\n"""\n${text}\n"""${thesaurusText}`
   }
@@ -117,11 +117,11 @@ export function useProofreading() {
       const prompt = createPrompt(inputText)
       const payload = { ...config, controller, inputText: prompt, onChunk: (chunk: string) => setWordCount(chunk.length)}
       const { content, analyze: analyzeData } = await fetchSSE(payload)
-      setAnalyze(analyzeData)
+      setAnalyze(analyzeData)      
       
       let [issueIdCounter, currentOffset] = [0, 0]
       const parsedIssues: any[] = fastMode ? [{ original: inputText, suggestion: content }] : jsonRepairSafe(content)      
-      const processedIssues = parsedIssues.map((item) => {
+      const processedIssues = parsedIssues.filter((item) => item.original !== item.suggestion).map((item) => {
         const start = inputText.indexOf(item.original, currentOffset)
         const isFound = start !== -1
 

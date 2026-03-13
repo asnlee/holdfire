@@ -126,7 +126,7 @@ export function ResultSection({
 
               <div className="text-xs text-muted-foreground flex items-center gap-2">
                 <span className="highlight-warning">更改 {rightDiff.filter(item => item.type === 'update').length}</span>
-                <span className="highlight-error">删除 {rightDiff.filter(item => item.type === 'del').length}</span>
+                <span className="highlight-error">不同 {rightDiff.filter(item => item.type === 'del').length}</span>
                 <span className="text-green-600 dark:text-green-400 cursor-pointer" onClick={() => navigator.clipboard.writeText(issues[0].suggestion)}>
                   复制文本
                 </span>
