@@ -370,7 +370,7 @@ export function DiffAssistant() {
               </CardTitle>
             </CardHeader>
           <CardContent className="space-y-4">
-            <div className={`flex items-start gap-4`}>
+            <div className="grid grid-cols-2 gap-4">
               <TextInput config={proofreading.config} inputText={inputLeft} setInputText={setInputLeft} />
               <TextInput config={proofreading.config} inputText={inputRight} setInputText={setInputRight} />
             </div>
@@ -420,7 +420,7 @@ export function DiffAssistant() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-start gap-4 max-h-[600px] overflow-y-auto">
+            <div className="grid grid-cols-2 gap-4 max-h-[600px] overflow-y-auto">
               <TextOutput diff={leftDiff} />
               <TextOutput diff={rightDiff} />
             </div>
