@@ -41,6 +41,7 @@ const EXAMPLE_TEXT = `太阳徐徐升起，给大地带来了早晨的气息。�
 export function useProofreading() {
   const [inputText, setInputText] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [reasoning, setReasoning] = useState("")
   const [wordCount, setWordCount] = useState(0)
   const [showResults, setShowResults] = useState(false)
   const [fastMode, setFastMode] = useState(false)
@@ -108,6 +109,7 @@ export function useProofreading() {
     setShowResults(false)
     setIssues([])
     setApiError(null)
+    setReasoning('')
     setWordCount(0)
     setController(null)
 
@@ -115,7 +117,7 @@ export function useProofreading() {
       const controller = new AbortController()
       setController(controller)
       const prompt = createPrompt(inputText)
-      const payload = { ...config, controller, inputText: prompt, onChunk: (chunk: string) => setWordCount(chunk.length)}
+      const payload = { ...config, controller, inputText: prompt, onChunk: (chunk: string, reasoning = '') => { setWordCount(chunk.length); setReasoning(reasoning) }}
       const { content, analyze: analyzeData } = await fetchSSE(payload)
       setAnalyze(analyzeData)      
       
@@ -282,6 +284,7 @@ export function useProofreading() {
   return {
     inputText,
     setInputText,
+    reasoning,
     wordCount,
     isLoading,
     showResults,

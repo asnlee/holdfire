@@ -3,7 +3,7 @@ import type { ProofreadingConfig } from "@/types/proofreading"
 interface fetchSSEParams extends ProofreadingConfig {
     inputText: string,
     controller?: AbortController,
-    onChunk?: (chunk: string) => void,
+    onChunk?: (chunk: string, reasoning?: string) => void,
 }
 
 async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3) {
@@ -39,6 +39,7 @@ export default async function fetchSSE(config: fetchSSEParams) {
                 { role: "user", content: config.inputText },
             ],
             stream: true,
+            include_usage: true,
             temperature: 0.1
         }),
         signal,
@@ -55,7 +56,8 @@ export default async function fetchSSE(config: fetchSSEParams) {
     }
 
     let content = ""
-    let analyze = { firstTime: "", allTime: "", tokens: 0 };
+    let reasoningContent = ""
+    const analyze = { firstTime: "", allTime: "", tokens: 0 };
     while (true) {
         const { done, value } = await reader.read()
         if (done) break
@@ -70,15 +72,21 @@ export default async function fetchSSE(config: fetchSSEParams) {
                 if (jsonLine === "[DONE]") continue;
 
                 const data = JSON.parse(jsonLine)
-                content += data.choices[0]?.delta?.content || ''
-                config?.onChunk?.(content)
+                const delta = data.choices?.[0]?.delta
+                if (delta?.content) {
+                    content += delta.content
+                }
+                if (delta?.reasoning_content) {
+                    reasoningContent += delta.reasoning_content
+                }
+                config?.onChunk?.(content, reasoningContent)
+                analyze.tokens = data.usage?.total_tokens || content.length
             }
         }
     }
 
     analyze.allTime = ((new Date().getTime() - startTime.getTime()) / 1000).toFixed(2)
-    analyze.tokens = content.length
-
+    
     return {
         content,
         analyze,

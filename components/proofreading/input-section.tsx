@@ -5,8 +5,8 @@ import type React from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, Copy, Trash2, Lightbulb, Upload, FileText, Eye, Languages, Volume2, Search, BookOpen, Link, MonitorCheckIcon, Rocket } from "lucide-react"
-import { useRef, useState } from "react"
+import { Loader2, Copy, Trash2, Lightbulb, Upload, FileText, Eye, Languages, Volume2, Search, BookOpen, Link, MonitorCheckIcon, Rocket, Sparkles } from "lucide-react"
+import { useRef, useState, useEffect } from "react"
 import { parseFile, type ParsedFile } from "@/lib/file-parser"
 import { request } from "@/lib/request"
 import { FilePreviewCard } from "./file-preview-card"
@@ -19,6 +19,7 @@ interface InputSectionProps {
   setInputText: (text: string) => void
   fastMode: boolean
   setFastMode: (mode: boolean) => void
+  reasoning: string
   wordCount: number
   isLoading: boolean
   onCheck: () => void
@@ -35,6 +36,7 @@ export function InputSection({
   setInputText,
   fastMode,
   setFastMode,
+  reasoning,
   wordCount,
   isLoading,
   onCheck,
@@ -45,6 +47,7 @@ export function InputSection({
   charCount,
 }: InputSectionProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const reasoningRef = useRef<HTMLDivElement>(null)
   const [uploadedFile, setUploadedFile] = useState<string | null>(null)
   const [parsedFile, setParsedFile] = useState<ParsedFile | null>(null)
   const [previewOpen, setPreviewOpen] = useState(false)
@@ -52,6 +55,12 @@ export function InputSection({
   const [selectedText, setSelectedText] = useState('')
   const [loadingAudio, setLoadingAudio] = useState(false)
   const { toast } = useToast()
+
+  useEffect(() => {
+    if (reasoningRef.current) {
+      reasoningRef.current.scrollTop = reasoningRef.current.scrollHeight
+    }
+  }, [reasoning])
 
   const handleCopy = async () => {
     if (!inputText.trim()) return
@@ -372,6 +381,13 @@ export function InputSection({
             </div>
             <b>校对结果</b>
           </div>
+
+          {reasoning && (
+            <div className="mt-4 bg-gray-50 rounded-lg p-3 text-sm text-gray-600 ">
+              <h1 className="flex items-center gap-1 font-medium"> <Sparkles className="h-4 w-4 inline" /> 正在思考...</h1>
+              <div ref={reasoningRef} className="mt-2 whitespace-pre-wrap h-25 overflow-y-auto">{reasoning}</div>
+            </div>
+          )}
 
           <div className="flex items-center justify-center py-15">
             <Loader2 className="mr-2 h-5 w-5 animate-spin text-primary" />
