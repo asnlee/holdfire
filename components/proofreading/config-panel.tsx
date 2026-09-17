@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { ProofreadingConfig } from "@/types/proofreading"
-import { Save, RotateCcw, Lock, Eye, EyeClosed, AlertCircle, HeartCrack, Lightbulb } from "lucide-react"
+import { Save, RotateCcw, Lock, Eye, EyeClosed, AlertCircle, HeartCrack, Lightbulb, ImageIcon } from "lucide-react"
 import { DEFAULT_CONFIG } from "@/hooks/use-proofreading"
 import { useLocalStorage } from "@/hooks/use-localStorage"
 import { usePrompt } from "@/components/prompt-provider"
@@ -28,7 +28,7 @@ export function ConfigPanel({ authCode, open, onOpenChange, config, onSave, onRe
   const [tempConfig, setTempConfig] = useState({ ...config });
   const [keyVisible, setKeyVisible] = useState(false)
   const [availableModels, setAvailableModels] = useLocalStorage<string[]>('availableModels', []);
-  const [openReasoningModels, setOpenReasoningModels] = useState<string[]>([]);
+  const [openReasoningModels, setOpenReasoningModels] = useState<Record<string, { reasoning: boolean; vision?: boolean }>>({});
   const [modelFilterOpen, setModelFilterOpen] = useState(false);
   const [modelFilter, setModelFilter] = useState("");
   const { showPrompt } = usePrompt();
@@ -97,15 +97,23 @@ export function ConfigPanel({ authCode, open, onOpenChange, config, onSave, onRe
   const fetchOpenModels = async (models: string[]) => {
     if (!models.length) return;
     try {
-      const targetModelNames = new Set(models.map(extractModelName));
+      const targetModels = new Set(models.map(extractModelName));
       const response = await fetch('https://openrouter.ai/api/v1/models');
       if (!response.ok) throw new Error('无法获取模型列表');
 
       const res = await response.json();
       if (res.data) {
-        const reasoningModels = res.data.filter((m: any) => m.reasoning).map((m: any) => extractModelName(String(m.id)));
-        const intersection = reasoningModels.filter((model: string) => targetModelNames.has(model));
-        setOpenReasoningModels(intersection);
+        const newOpenReasoningModels: Record<string, { reasoning: boolean; vision?: boolean }> = {};
+        for (const m of res.data) {
+          const name = extractModelName(String(m.id));
+          if (!targetModels.has(name)) continue;
+
+          newOpenReasoningModels[name] = {
+            reasoning: m.reasoning,
+            vision: m.architecture?.input_modalities?.includes('image'),
+          };
+        }
+        setOpenReasoningModels(newOpenReasoningModels);
       }
     } catch (error) {
       console.error('获取模型列表失败:', error);
@@ -258,7 +266,8 @@ export function ConfigPanel({ authCode, open, onOpenChange, config, onSave, onRe
                           }}
                         >
                           {model}
-                          {openReasoningModels.includes(extractModelName(model)) && <Lightbulb className="inline h-3 w-3" />}
+                          {openReasoningModels[extractModelName(model)]?.reasoning && <Lightbulb className="inline h-3 w-3" />}
+                          {openReasoningModels[extractModelName(model)]?.vision && <ImageIcon className="inline h-3 w-3" />}
                         </div>
                       ))
                     ) : (
