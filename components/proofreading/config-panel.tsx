@@ -310,8 +310,8 @@ export function ConfigPanel({ authCode, open, onOpenChange, config, onSave, onRe
             
             <div className="space-y-2">
               <Label className="flex items-center justify-between" htmlFor="pollinationsKey">
-                <span>pollinations Key</span>
-                <a href="https://auth.pollinations.ai" target="_blank" className="text-xs text-primary">获取链接</a>
+                <span>huggingface Key</span>
+                <a href="https://huggingface.co/settings/tokens" target="_blank" className="text-xs text-primary">获取链接</a>
               </Label>
 
               <Input

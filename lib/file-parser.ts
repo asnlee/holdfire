@@ -106,14 +106,14 @@ async function parseImage(file: File, config: ProofreadingConfig): Promise<Parse
     const image_url = await fileToBase64(file)
     const token = config.pollinationsKey || process.env.NEXT_PUBLIC_POLL_KEY
 
-    const response = await fetch("https://gen.pollinations.ai/v1/chat/completions", {
+    const response = await fetch('https://router.huggingface.co/v1/chat/completions', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        model: "gemini",
+        model: 'Qwen/Qwen3.8-27B',
         messages: [
           {
             role: "user",
